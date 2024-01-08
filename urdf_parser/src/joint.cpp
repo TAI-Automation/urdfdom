@@ -579,7 +579,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
   }
 
   //Get Joint Linkage
-
+  TiXmlElement *linkage_xml = config->FirstChildElement("linkage");
   if (linkage_xml)
   {
     joint.linkage.reset(new JointLinkage());
