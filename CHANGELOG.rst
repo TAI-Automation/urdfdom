@@ -2,6 +2,9 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+5.0.1 (2025-07-01)
+------------------
+
 4.0.3 (2025-06-23)
 ------------------
 * Removed deprecated code (`#217 <https://github.com/ros/urdfdom/issues/217>`_)
