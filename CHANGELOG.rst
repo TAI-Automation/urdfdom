@@ -2,6 +2,11 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Relax the version compatibility for urdfdom_headers. (`#222 <https://github.com/ros/urdfdom/issues/222>`_)
+* Contributors: Chris Lalancette
+
 5.0.1 (2025-07-01)
 ------------------
 
