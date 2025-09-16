@@ -280,6 +280,78 @@ bool parseJointCalibration(JointCalibration &jc, tinyxml2::XMLElement* config)
   return true;
 }
 
+
+bool parseJointLinkage(JointLinkage &jm, tinyxml2::XMLElement* config){
+
+
+  jm.clear();
+
+
+  const char* parent_name_str = config->Attribute("parent");
+
+  if (parent_name_str == NULL){
+    CONSOLE_BRIDGE_logError("joint linkage: no linkage parent joint specified");
+    return false;
+  }
+  else
+    jm.parent_name = parent_name_str;
+  
+  const char* base_width_str = config->Attribute("base_width");
+
+  if (base_width_str == NULL)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_linkage: no base_width, exiting");
+    return false;
+  }
+  else
+  {
+    try {
+      jm.base_width = strToDouble(base_width_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("base_width value (%s) is not a valid float", base_width_str);
+      return false;
+    }
+  }
+  // top_width
+  const char* top_width_str = config->Attribute("top_width");
+
+  if (top_width_str == NULL)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_linkage: no top_width, exiting");
+    return false;
+  }
+  else
+  {
+    try {
+      jm.top_width = strToDouble(top_width_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("top_width value (%s) is not a valid float", top_width_str);
+      return false;
+    }
+  }
+  // leg_length
+  const char* leg_length_str = config->Attribute("leg_length");
+
+  if (leg_length_str == NULL)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_linkage: no leg_length, exiting");
+    return false;
+  }
+  else
+  {
+    try {
+      jm.leg_length = strToDouble(leg_length_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("leg_length value (%s) is not a valid float", leg_length_str);
+      return false;
+    }
+  }
+
+  return true;
+
+}
+
+
 bool parseJointMimic(JointMimic &jm, tinyxml2::XMLElement* config)
 {
   jm.clear();
@@ -506,6 +578,18 @@ bool parseJoint(Joint &joint, tinyxml2::XMLElement* config)
     }
   }
 
+  //Get Joint Linkage
+  tinyxml2::XMLElement *linkage_xml = config->FirstChildElement("linkage");
+  if (linkage_xml)
+  {
+    joint.linkage.reset(new JointLinkage());
+    if (!parseJointLinkage(*joint.linkage, linkage_xml))
+    {
+      CONSOLE_BRIDGE_logError("Could not parse linkage element for joint  [%s]", joint.name.c_str());
+      joint.linkage.reset();
+      return false;
+    }
+  }
   // Get Dynamics
   tinyxml2::XMLElement *prop_xml = config->FirstChildElement("dynamics");
   if (prop_xml)
@@ -584,6 +668,21 @@ bool exportJointMimic(JointMimic &jm, tinyxml2::XMLElement* xml)
   }
   return true;
 }
+
+bool exportJointLinkage(JointLinkage &jm, tinyxml2::XMLElement* xml)
+{
+  if (!jm.parent_name.empty())
+  {
+    tinyxml2::XMLElement *linkage_xml = xml->GetDocument()->NewElement("linkage");
+    linkage_xml->SetAttribute("leg_length", urdf_export_helpers::values2str(jm.leg_length) );
+    linkage_xml->SetAttribute("base_width", urdf_export_helpers::values2str(jm.base_width) );
+    linkage_xml->SetAttribute("top_width", urdf_export_helpers::values2str(jm.top_width) );
+    linkage_xml->SetAttribute("parent", jm.parent_name.c_str());
+    xml->LinkEndChild(linkage_xml);
+  }
+  return true;
+}
+
 
 bool exportJoint(Joint &joint, tinyxml2::XMLElement* xml)
 {
