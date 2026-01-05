@@ -674,9 +674,9 @@ bool exportJointLinkage(JointLinkage &jm, tinyxml2::XMLElement* xml)
   if (!jm.parent_name.empty())
   {
     tinyxml2::XMLElement *linkage_xml = xml->GetDocument()->NewElement("linkage");
-    linkage_xml->SetAttribute("leg_length", urdf_export_helpers::values2str(jm.leg_length) );
-    linkage_xml->SetAttribute("base_width", urdf_export_helpers::values2str(jm.base_width) );
-    linkage_xml->SetAttribute("top_width", urdf_export_helpers::values2str(jm.top_width) );
+    linkage_xml->SetAttribute("leg_length", urdf_export_helpers::values2str(jm.leg_length).c_str() );
+    linkage_xml->SetAttribute("base_width", urdf_export_helpers::values2str(jm.base_width).c_str() );
+    linkage_xml->SetAttribute("top_width", urdf_export_helpers::values2str(jm.top_width).c_str() );
     linkage_xml->SetAttribute("parent", jm.parent_name.c_str());
     xml->LinkEndChild(linkage_xml);
   }
