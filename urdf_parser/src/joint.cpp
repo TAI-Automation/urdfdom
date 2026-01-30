@@ -42,6 +42,7 @@
 #include <console_bridge/console.h>
 #include <tinyxml2.h>
 #include <urdf_parser/urdf_parser.h>
+#include <iostream>
 
 #include "./pose.hpp"
 
@@ -351,6 +352,51 @@ bool parseJointLinkage(JointLinkage &jm, tinyxml2::XMLElement* config){
 
 }
 
+bool parseJointLinkageNew(JointLinkageNew &jmn, tinyxml2::XMLElement* config)
+{
+
+  jmn.clear();
+
+  const char* parent_name_str = config->Attribute("parent");
+
+  if (parent_name_str == NULL){
+    CONSOLE_BRIDGE_logError("joint linkage: no linkage parent joint specified");
+    return false;
+  }
+  else{
+    jmn.parent_name = parent_name_str;
+  }
+  
+  const char* function_name_str = config->Attribute("function_str");
+
+  if (function_name_str == NULL)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_linkage: no function_str, exiting");
+    return false;
+  }
+  else
+  {
+    jmn.function_str = function_name_str; 
+    std::cerr << "urdfdom.joint_linkage: function_str = " << function_name_str << std::endl;
+  }
+
+  const char* params_str = config->Attribute("params_str");
+
+  if (params_str == NULL)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_linkage: no params_str, exiting");
+    return false;
+  }
+  else
+  {
+    jmn.params_str = params_str;
+    std::cerr << "urdfdom.joint_linkage: params_str = " << params_str << std::endl;
+  }
+
+  return true;
+
+}
+
 
 bool parseJointMimic(JointMimic &jm, tinyxml2::XMLElement* config)
 {
@@ -590,6 +636,20 @@ bool parseJoint(Joint &joint, tinyxml2::XMLElement* config)
       return false;
     }
   }
+
+  //Get Joint Linkage New
+  tinyxml2::XMLElement *linkage_new_xml = config->FirstChildElement("linkage_new");
+  if (linkage_new_xml)
+  {
+    joint.linkage_new.reset(new JointLinkageNew());
+    if (!parseJointLinkageNew(*joint.linkage_new, linkage_new_xml))
+    {
+      CONSOLE_BRIDGE_logError("Could not parse linkage new element for joint  [%s]", joint.name.c_str());
+      joint.linkage_new.reset();
+      return false;
+    }
+  }
+
   // Get Dynamics
   tinyxml2::XMLElement *prop_xml = config->FirstChildElement("dynamics");
   if (prop_xml)
@@ -679,6 +739,19 @@ bool exportJointLinkage(JointLinkage &jm, tinyxml2::XMLElement* xml)
     linkage_xml->SetAttribute("top_width", urdf_export_helpers::values2str(jm.top_width).c_str() );
     linkage_xml->SetAttribute("parent", jm.parent_name.c_str());
     xml->LinkEndChild(linkage_xml);
+  }
+  return true;
+}
+
+bool exportJointLinkageNew(JointLinkageNew &jmn, tinyxml2::XMLElement* xml)
+{
+  if (!jmn.parent_name.empty())
+  {
+    tinyxml2::XMLElement *linkage_new_xml = xml->GetDocument()->NewElement("linkage_new");
+    linkage_new_xml->SetAttribute("parent", jmn.parent_name.c_str());
+    linkage_new_xml->SetAttribute("function_str", jmn.function_str.c_str());
+    linkage_new_xml->SetAttribute("params_str", jmn.params_str.c_str());
+    xml->LinkEndChild(linkage_new_xml);
   }
   return true;
 }
